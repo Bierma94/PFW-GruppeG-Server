@@ -25,3 +25,4 @@ Add programm arguments
   --jwt.secrect=Secret
 ```
 - Change Username, Password, Secret
+- JWT Secret MUST have a size >= 256 bits!

@@ -5,6 +5,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import pfw.gruppeG.madn.security.Exception.UserAlreadyRegisteredException;
 import pfw.gruppeG.madn.security.user.service.UserService;
 
 /**
@@ -46,9 +47,13 @@ public class AuthenticationService {
      * @param email email of the user
      * @param password password of the user
      */
-    public void register(String username,String email, String password) {
-
-        userService.saveUser(username,
+    public void register(String username,String email, String password)
+            throws UserAlreadyRegisteredException {
+        userService.findUserByUsername(username).ifPresent(user -> {
+            throw new UserAlreadyRegisteredException("User already registered");
+        });
+        userService.saveUser(
+                username,
                 passwordEncoder.encode(password),
                 email);
     }

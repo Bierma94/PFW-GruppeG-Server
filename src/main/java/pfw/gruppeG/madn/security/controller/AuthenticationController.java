@@ -2,6 +2,7 @@ package pfw.gruppeG.madn.security.controller;
 
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import pfw.gruppeG.madn.security.Exception.UserAlreadyRegisteredException;
 import pfw.gruppeG.madn.security.dto.LoginDto;
 import pfw.gruppeG.madn.security.dto.LoginResonse;
 import pfw.gruppeG.madn.security.dto.RegisterDto;
@@ -23,6 +25,7 @@ import pfw.gruppeG.madn.security.service.AuthenticationService;
  */
 @RestController
 @RequestMapping("/auth")
+@Slf4j
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
@@ -45,9 +48,25 @@ public class AuthenticationController {
                             .mesage(bindingResult.getFieldError().getDefaultMessage())
                             .build());
         }
-        authenticationService.register(registerDto.getUsername(), registerDto.getEmail(), registerDto.getPassword());
+        try {
+            authenticationService.register(
+                    registerDto.getUsername(),
+                    registerDto.getEmail(),
+                    registerDto.getPassword());
+        } catch (UserAlreadyRegisteredException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(RegisterResponse.builder()
+                            .mesage(e.getMessage())
+                            .build());
+        }
+
+        log.info("User " + registerDto.getUsername() + " registered");
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(RegisterResponse.builder().mesage(registerDto.getUsername()).build());
+                .body(RegisterResponse
+                        .builder()
+                        .mesage(registerDto.getUsername() + " successfully registered")
+                        .build());
     }
     /**
      * User login
@@ -60,6 +79,7 @@ public class AuthenticationController {
             String token = authenticationService.authenticate(loginDto.getUsername(), loginDto.getPassword());
             return ResponseEntity.ok(LoginResonse.builder().token(token).build());
         } catch (Exception e) {
+            log.debug("Login failed: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
     }
