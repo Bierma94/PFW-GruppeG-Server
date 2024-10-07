@@ -14,7 +14,7 @@ Gruppe: G
 Clone the project
 
 ```bash
-  git clone https://github.com/Bierma94/PFW-GruppeG-Server.g
+  git clone https://github.com/Bierma94/PFW-GruppeG-Server.git
 ```
 
 Add programm arguments
